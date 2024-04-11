@@ -2,7 +2,7 @@ resource "aws_vpc_peering_connection" "default" {
   count       = module.this.enabled ? 1 : 0
   vpc_id      = join("", data.aws_vpc.requestor[*].id)
   peer_vpc_id = join("", data.aws_vpc.acceptor[*].id)
-
+  peer_region = var.acceptance_region
   auto_accept = var.auto_accept
 
   accepter {
@@ -32,6 +32,7 @@ data "aws_vpc" "requestor" {
 # Lookup acceptor VPC so that we can reference the CIDR
 data "aws_vpc" "acceptor" {
   count = module.this.enabled ? 1 : 0
+  region = var.acceptance_region
   id    = var.acceptor_vpc_id
   tags  = var.acceptor_vpc_tags
 }
@@ -45,6 +46,7 @@ data "aws_route_tables" "requestor" {
 data "aws_route_tables" "acceptor" {
   count  = module.this.enabled ? 1 : 0
   vpc_id = join("", data.aws_vpc.acceptor[*].id)
+  region = var.acceptance_region
   tags   = var.acceptor_route_table_tags
 }
 
@@ -72,5 +74,6 @@ resource "aws_route" "acceptor" {
   route_table_id            = element(distinct(sort(data.aws_route_tables.acceptor[0].ids)), ceil(count.index / length(local.requestor_cidr_blocks)))
   destination_cidr_block    = local.requestor_cidr_blocks[count.index % length(local.requestor_cidr_blocks)]
   vpc_peering_connection_id = join("", aws_vpc_peering_connection.default[*].id)
+  region = var.acceptance_region
   depends_on                = [data.aws_route_tables.acceptor, aws_vpc_peering_connection.default]
 }
