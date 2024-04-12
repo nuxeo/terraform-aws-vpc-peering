@@ -4,6 +4,11 @@ variable "requestor_vpc_id" {
   default     = ""
 }
 
+variable "acceptance_region" {
+  description = "The region where the VPC peering connection will be accepted. Defaults to the default region of the AWS provider if not specified."
+  type        = string
+}
+
 variable "requestor_vpc_tags" {
   type        = map(string)
   description = "Requestor VPC tags"
