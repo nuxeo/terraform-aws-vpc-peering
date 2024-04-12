@@ -50,7 +50,7 @@ data "aws_route_tables" "requestor" {
 data "aws_route_tables" "acceptor" {
   count  = module.this.enabled ? 1 : 0
   vpc_id = join("", data.aws_vpc.acceptor[*].id)
-  region = var.acceptance_region
+  provider = aws.peer
   tags   = var.acceptor_route_table_tags
 }
 
